@@ -1,4 +1,5 @@
 from authx import AuthX, AuthXConfig, TokenResponse
+import bcrypt
 from app.core.config import settings
 
 config = AuthXConfig(
@@ -17,3 +18,9 @@ def create_token(id_user: int) -> TokenResponse:
     access_token = auth.create_access_token(uid=str(id_user))
     refresh_token = auth.create_refresh_token(uid=str(id_user))
     return TokenResponse(access_token=access_token, refresh_token=refresh_token)
+
+# хэширует пароль
+def hashed_pass(password: str) -> str:
+    salt = bcrypt.gensalt(rounds=12)
+    hashed_pass = bcrypt.hashpw(password, salt)
+    return hashed_pass
