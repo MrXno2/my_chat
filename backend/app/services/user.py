@@ -1,10 +1,13 @@
 from authx import TokenResponse
-import bcrypt
 from fastapi import HTTPException
+from sqlalchemy import except_all
 from sqlalchemy.orm import Session
 from app.repositories.user import UserRepository
-from app.core.security import create_token
+from app.core.security import create_token, verify_password
 from app.schemas.user import AuthSchema
+from app.repositories import user
+from sqlalchemy.exc import IntegrityError
+from app.core.exception import UserNotFound, UserInvalidPass, UserAlreadyExists
 
 
 class UserService:
@@ -15,14 +18,16 @@ class UserService:
     def user_login(self, user_data: AuthSchema) -> TokenResponse:
         user_orm = self.user_repository.check_user(user_name = user_data.login)
         if not user_orm:
-            raise # юзер не найден
-        if bcrypt.checkpw(user_data.password, user_orm.password_hash):
+            raise UserNotFound()
+        if verify_password(user_data.password, user_orm.password_hash):
             return create_token(user_orm.id)
         else:
-            print("пароль хуйня")
+            raise UserInvalidPass()
         
-    def user_sign(self, user_data: AuthSchema) -> None:
+    def user_sign(self, user_data: AuthSchema) -> TokenResponse:
         try:
-            user_orm = self.user_repository.create_user(user_data)
-        except Exception:
-            raise HTTPException(409, "User with this login already exists")
+            user_id = self.user_repository.create_user(user_data)
+        except IntegrityError:
+            raise UserAlreadyExists()
+        return create_token(user_id)
+        
