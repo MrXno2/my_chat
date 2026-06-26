@@ -2,11 +2,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.core.config import get_settings
+from app.core.config import settings
 
 
-settigs = get_settings() # config
-engine = create_engine(settigs.DATABASE_URL) # создает подключение к БД
+engine = create_engine(settings.DATABASE_URL) # создает подключение к БД
 SessionLocal = sessionmaker(bind=engine) # управление бд
 
 # запрос к бд через это, гарант закрытия
