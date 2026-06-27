@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 export default function MainPage() {
+  const [showExitModal, setShowExitModal] = useState(false)
+
   return (
     <div className="bb-screen">
       <div className="bb-bg" />
@@ -21,11 +23,7 @@ export default function MainPage() {
               type="button"
               className="bb-close-btn"
               aria-label="Close"
-              onClick={() => {
-                // Later: show popup
-                // eslint-disable-next-line no-console
-                console.log('close clicked')
-              }}
+              onClick={() => setShowExitModal(true)}
             >
               ×
             </button>
@@ -45,6 +43,52 @@ export default function MainPage() {
             </div>
           </div>
         </div>
+
+        {showExitModal ? (
+          <div
+            className="bb-modal-overlay"
+            role="presentation"
+            onClick={() => setShowExitModal(false)}
+          >
+            <div
+              className="bb-modal"
+              role="dialog"
+              aria-modal="true"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bb-modal-titlebar">
+                <span>Exit</span>
+                <button
+                  type="button"
+                  className="bb-modal-close-btn"
+                  aria-label="Close"
+                  onClick={() => setShowExitModal(false)}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="bb-modal-body">
+                <div className="bb-modal-question">
+                  Are you sure you
+                  <br />
+                  want to exit?
+                </div>
+                <button
+                  type="button"
+                  className="bb-modal-exit-btn"
+                  onClick={() => {
+                    // placeholder: in future will logout / close app view
+                    setShowExitModal(false)
+                    window.location.assign('/')
+                  }}
+                >
+                  EXIT
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   )
