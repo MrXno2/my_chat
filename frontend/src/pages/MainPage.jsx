@@ -13,29 +13,46 @@ export default function MainPage() {
   return (
     <div className="bb-screen">
       <div className="bb-bg" />
-      <div className="bb-center" style={{ height: '100%', padding: 18, position: 'relative', zIndex: 1 }}>
-        <div className="bb-window" style={{ width: 'min(520px, 92vw)' }}>
-          <div className="bb-titlebar">MyChat Main (placeholder)</div>
+      <div
+        className="bb-center"
+        style={{ height: '100%', padding: 18, position: 'relative', zIndex: 1 }}
+      >
+        <div
+          className="bb-window"
+          style={{
+            width: 'min(560px, 92vw)',
+            height: 'min(560px, 92vw)',
+          }}
+        >
+          <div className="bb-titlebar" style={{ position: 'relative', paddingRight: 7 }}>
+            MyChat Main
+            <button
+              type="button"
+              className="bb-close-btn"
+              aria-label="Close"
+              onClick={() => {
+                // Later: show popup
+                // eslint-disable-next-line no-console
+                console.log('close clicked')
+              }}
+            >
+              ×
+            </button>
+          </div>
+
           <div className="bb-window__content">
             {ready ? (
-              <>
-                <div style={{ fontWeight: 800, marginBottom: 8 }}>You are authorized ✅</div>
-                <div style={{ lineHeight: 1.4, marginBottom: 14 }}>
-                  This page is a placeholder for the future app.
-                  <br />
-                  Tokens are stored in cookies by the backend auth endpoints.
+                <div className="bb-main-layout">
+                  <div className="bb-main-top">
+                    <div className="bb-main-left" />
+                    <div className="bb-main-right" />
+                  </div>
+
+                  <div className="bb-main-bottom">
+                    <div className="bb-main-bottom-left" />
+                    <div className="bb-main-bottom-right" />
+                  </div>
                 </div>
-                <button
-                  className="bb-btn"
-                  type="button"
-                  onClick={() => {
-                    clearTokens()
-                    navigate('/auth', { replace: true })
-                  }}
-                >
-                  Go to Authorization
-                </button>
-              </>
             ) : (
               <div>Loading...</div>
             )}
