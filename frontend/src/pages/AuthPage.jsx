@@ -95,14 +95,14 @@ export default function AuthPage({ onAuthSuccess }) {
               {error ? <div className="bb-error">{error}</div> : null}
 
               <Field
-                label="Login"
+                label="Login:"
                 value={login}
                 onChange={setLogin}
                 autoComplete="username"
               />
 
               <Field
-                label="Password"
+                label="Password:"
                 type="password"
                 value={password}
                 onChange={setPassword}
