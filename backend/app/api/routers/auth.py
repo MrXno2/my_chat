@@ -40,6 +40,7 @@ async def sign_user(
 @router.get("/check_user") # был /me
 async def protected(payload = Depends(auth.access_token_required)):
     print(payload.sub) # id юзера, payload просто название
+    print(type(payload.sub))
     return {"message": "Hello World"}
 
 

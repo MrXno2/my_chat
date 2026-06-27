@@ -41,11 +41,13 @@ export default function AuthPage({ onAuthSuccess }) {
       const { res, data } = await apiPostJson(endpoint, { login, password })
 
       if (!res.ok) {
-        const msg =
-          data?.detail ||
-          data?.message ||
-          `Request failed with status ${res.status}`
-        throw new Error(Array.isArray(msg) ? 'Validation error' : msg)
+        const ERROR_MESSAGES = {
+          UserNotFound: 'User not found',
+          InvalidPassword: 'Invalid password',
+          UserAlreadyExists: 'User already exists'
+        }
+        const knownError = data?.error_type && ERROR_MESSAGES[data.error_type]
+        throw new Error(knownError || 'Unknown error, please try again later')
       }
 
       // backend returns tokens in JSON; store them in cookies

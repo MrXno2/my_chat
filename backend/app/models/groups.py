@@ -9,7 +9,7 @@ class GroupORM(Base):
     __tablename__ = "groups"
 
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False) # использовать название в качестве ссылки / поиска
-    password_hash: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    password_hash: Mapped[Optional[str]] = mapped_column(Text, nullable=False)
     creator_id: Mapped[int] = mapped_column(
         Integer, 
         ForeignKey('users.id', ondelete='CASCADE'), # связь с юзерами, которая не даст создать того кого в них нету

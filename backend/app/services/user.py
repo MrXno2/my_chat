@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from app.repositories.user import UserRepository
 from app.core.security import create_token, verify_password
 from app.schemas.user import AuthSchema
-from app.core.exception import UserNotFound, UserInvalidPass, UserAlreadyExists
+from app.core.exception import InvalidPassword, UserNotFound, UserAlreadyExists
 
 
 class UserService:
@@ -19,7 +19,7 @@ class UserService:
         if verify_password(user_data.password, user_orm.password_hash):
             return create_token(user_orm.id)
         else:
-            raise UserInvalidPass()
+            raise InvalidPassword()
 
     async def user_sign(self, user_data: AuthSchema) -> TokenResponse:
         try:

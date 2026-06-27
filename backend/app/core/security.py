@@ -9,6 +9,7 @@ config = AuthXConfig(
     JWT_REFRESH_COOKIE_NAME="refresh_token",
     JWT_REFRESH_TOKEN_EXPIRES=604800,
     JWT_TOKEN_LOCATION=["cookies"],
+    JWT_COOKIE_CSRF_PROTECT=False,
 )
 
 auth = AuthX(config=config)
