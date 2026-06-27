@@ -14,7 +14,10 @@ function setTokens(_tokenResponse) {
 }
 
 function clearTokens() {
-  // no-op
+  return fetch(apiUrl('/api/auth/logout'), {
+    method: 'POST',
+    credentials: 'include'
+  })
 }
 
 export async function apiGet(path) {

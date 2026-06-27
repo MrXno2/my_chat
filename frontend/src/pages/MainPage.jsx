@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { clearTokens } from '../lib/api.js'
 
 export default function MainPage() {
   const [showExitModal, setShowExitModal] = useState(false)
@@ -78,9 +79,9 @@ export default function MainPage() {
                   type="button"
                   className="bb-modal-exit-btn"
                   onClick={() => {
-                    // placeholder: in future will logout / close app view
+                    clearTokens()
                     setShowExitModal(false)
-                    window.location.assign('/')
+                    window.location.assign('/auth')
                   }}
                 >
                   EXIT

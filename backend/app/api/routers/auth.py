@@ -24,7 +24,7 @@ async def login_user(
 
 
 @router.post("/register") # был "/sign"
-def sign_user(
+async def sign_user(
     user_data: AuthSchema,
     response: Response, 
     user_service: UserService = Depends(get_user_service)
@@ -37,5 +37,12 @@ def sign_user(
 
 
 @router.get("/check_user", dependencies=[Depends(auth.access_token_required)]) # был /me
-def protected():
+async def protected():
     return {"message": "Hello World"}
+
+
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(jwt_config.JWT_ACCESS_COOKIE_NAME)
+    response.delete_cookie(jwt_config.JWT_REFRESH_COOKIE_NAME)
+    return {"message": "Logged out"}
