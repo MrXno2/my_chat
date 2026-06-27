@@ -90,7 +90,7 @@ export default function AuthPage({ onAuthSuccess }) {
             </div>
           </div>
 
-          <div className="bb-window__content">
+          <div className="bb-window__content" style={{ padding: '7px' }}>
             <form className="bb-form" onSubmit={onSubmit}>
               {error ? <div className="bb-error">{error}</div> : null}
 
