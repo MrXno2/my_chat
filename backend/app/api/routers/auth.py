@@ -17,8 +17,8 @@ async def login_user(
     user_service: UserService = Depends(get_user_service)
 ) -> TokenResponse:
     token = user_service.user_login(user_data)
-    response.set_cookie(jwt_config.JWT_ACCESS_COOKIE_NAME, token.access_token)      # переписать потом на фронт
-    response.set_cookie(jwt_config.JWT_REFRESH_COOKIE_NAME, token.refresh_token)    # переписать потом на фронт
+    # response.set_cookie(jwt_config.JWT_ACCESS_COOKIE_NAME, token.access_token)      # переписать потом на фронт
+    # response.set_cookie(jwt_config.JWT_REFRESH_COOKIE_NAME, token.refresh_token)    # переписать потом на фронт
     
     return token 
 
@@ -30,12 +30,12 @@ def sign_user(
     user_service: UserService = Depends(get_user_service)
 ) -> TokenResponse:
     token = user_service.user_sign(user_data)
-    response.set_cookie(jwt_config.JWT_ACCESS_COOKIE_NAME, token.access_token)      # переписать потом на фронт
-    response.set_cookie(jwt_config.JWT_REFRESH_COOKIE_NAME, token.refresh_token)    # переписать потом на фронт
+    # response.set_cookie(jwt_config.JWT_ACCESS_COOKIE_NAME, token.access_token)      # переписать потом на фронт
+    # response.set_cookie(jwt_config.JWT_REFRESH_COOKIE_NAME, token.refresh_token)    # переписать потом на фронт
     
     return token
 
 
-@router.get("/protected", dependencies=[Depends(auth.access_token_required)])
+@router.get("/me", dependencies=[Depends(auth.access_token_required)])
 def protected():
     return {"message": "Hello World"}

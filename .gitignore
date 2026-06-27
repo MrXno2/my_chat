@@ -5,3 +5,7 @@ venv/
 **/__pycache__/
 command.txt
 plan.txt
+# Node / React
+node_modules/
+dist/
+.env*
