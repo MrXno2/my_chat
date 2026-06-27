@@ -38,8 +38,14 @@ export default function MainPage() {
               </div>
 
               <div className="bb-main-bottom">
-                <div className="bb-main-bottom-left" />
-                <div className="bb-main-bottom-right" />
+                <div className="bb-main-bottom-left">
+                  <button className="bb-main-btn" type="button">Create Group</button>
+                  <button className="bb-main-btn" type="button">Search Group</button>
+                </div>
+                <div className="bb-main-bottom-right">
+                  <input className="bb-input-message" type="text" style={{ width: '80%', height: '100%', boxSizing: 'border-box' }} />
+                  <button className="bb-btn-message" type="button" style={{ width: '20%', height: '100%', boxSizing: 'border-box', margin: 0 }}>Send</button>
+                </div>
               </div>
             </div>
           </div>

@@ -11,7 +11,8 @@ from app.core.exception_handler import register_exception_handlers
 
 @asynccontextmanager # при входе делает до yield, при выходе после, нужен для отработки при старте/запуске
 async def lifespan(_: FastAPI):
-    Base.metadata.create_all(bind=engine) # создание всех таблиц по метаданным
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     print("START my_chat/backend")
     yield
     print("STOP my_chat/backend")

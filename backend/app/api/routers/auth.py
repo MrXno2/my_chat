@@ -16,7 +16,7 @@ async def login_user(
     response: Response, 
     user_service: UserService = Depends(get_user_service)
 ) -> TokenResponse:
-    token = user_service.user_login(user_data)
+    token = await user_service.user_login(user_data)
     response.set_cookie(jwt_config.JWT_ACCESS_COOKIE_NAME, token.access_token)      # переписать потом на фронт
     response.set_cookie(jwt_config.JWT_REFRESH_COOKIE_NAME, token.refresh_token)    # переписать потом на фронт
     
@@ -29,7 +29,7 @@ async def sign_user(
     response: Response, 
     user_service: UserService = Depends(get_user_service)
 ) -> TokenResponse:
-    token = user_service.user_sign(user_data)
+    token = await user_service.user_sign(user_data)
     response.set_cookie(jwt_config.JWT_ACCESS_COOKIE_NAME, token.access_token)      # переписать потом на фронт
     response.set_cookie(jwt_config.JWT_REFRESH_COOKIE_NAME, token.refresh_token)    # переписать потом на фронт
     

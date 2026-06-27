@@ -1,17 +1,12 @@
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from app.core.config import settings
 
 
-engine = create_engine(settings.DATABASE_URL) # создает подключение к БД
-SessionLocal = sessionmaker(bind=engine) # управление бд
+engine = create_async_engine(settings.DATABASE_URL)
+AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
-# запрос к бд через это, гарант закрытия
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session

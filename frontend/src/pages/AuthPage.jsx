@@ -4,10 +4,10 @@ import { apiPostJson, setTokens } from '../lib/api.js'
 
 function Field({ label, type = 'text', value, onChange, autoComplete }) {
   return (
-    <label className="bb-form__field">
-      <div className="bb-label">{label}</div>
+    <label className="bb-auth-form__field">
+      <div className="bb-auth-label">{label}</div>
       <input
-        className="bb-input"
+        className="bb-auth-input"
         type={type}
         value={value}
         autoComplete={autoComplete}
@@ -91,8 +91,8 @@ export default function AuthPage({ onAuthSuccess }) {
           </div>
 
           <div className="bb-window__content" style={{ padding: '7px' }}>
-            <form className="bb-form" onSubmit={onSubmit}>
-              {error ? <div className="bb-error">{error}</div> : null}
+            <form className="bb-auth-form" onSubmit={onSubmit}>
+              {error ? <div className="bb-auth-error">{error}</div> : null}
 
               <Field
                 label="Login:"
@@ -109,12 +109,12 @@ export default function AuthPage({ onAuthSuccess }) {
                 autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
               />
 
-              <button className="bb-btn" disabled={submitting} type="submit">
+              <button className="bb-auth-btn" disabled={submitting} type="submit">
                 {submitting ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}
               </button>
 
-              <div className="bb-status">
-                <b>Note:</b> Tokens are stored in cookies. After auth, you will be redirected automatically.
+              <div className="bb-auth-status">
+                Note: Tokens are stored in cookies. After auth, you will be redirected automatically.
               </div>
             </form>
           </div>
