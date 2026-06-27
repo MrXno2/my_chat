@@ -67,7 +67,7 @@ export default function AuthPage({ onAuthSuccess }) {
       <div className="bb-bg" />
       <div className="bb-auth-wrap">
         <div className="bb-window">
-          <div className="bb-titlebar">100_GRAMM Authentication</div>
+          <div className="bb-titlebar">100_GRAMM</div>
 
           <div className="bb-tabs">
             <div

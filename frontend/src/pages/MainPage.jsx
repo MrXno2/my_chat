@@ -19,7 +19,7 @@ export default function MainPage() {
           }}
         >
           <div className="bb-titlebar" style={{ position: 'relative', paddingRight: 7 }}>
-            MyChat Main
+            100_GRAMM
             <button
               type="button"
               className="bb-close-btn"
