@@ -1,15 +1,6 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { clearTokens } from '../lib/api.js'
+import React from 'react'
 
 export default function MainPage() {
-  const navigate = useNavigate()
-  const [ready, setReady] = useState(false)
-
-  useEffect(() => {
-    setReady(true)
-  }, [])
-
   return (
     <div className="bb-screen">
       <div className="bb-bg" />
@@ -41,21 +32,17 @@ export default function MainPage() {
           </div>
 
           <div className="bb-window__content">
-            {ready ? (
-                <div className="bb-main-layout">
-                  <div className="bb-main-top">
-                    <div className="bb-main-left" />
-                    <div className="bb-main-right" />
-                  </div>
+            <div className="bb-main-layout">
+              <div className="bb-main-top">
+                <div className="bb-main-left" />
+                <div className="bb-main-right" />
+              </div>
 
-                  <div className="bb-main-bottom">
-                    <div className="bb-main-bottom-left" />
-                    <div className="bb-main-bottom-right" />
-                  </div>
-                </div>
-            ) : (
-              <div>Loading...</div>
-            )}
+              <div className="bb-main-bottom">
+                <div className="bb-main-bottom-left" />
+                <div className="bb-main-bottom-right" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
