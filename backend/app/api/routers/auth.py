@@ -10,7 +10,7 @@ import app.core.exception as custom_exception
 
 router = APIRouter(prefix="/api/auth")
 
-@router.post("/login")
+@router.post("/login") # был /login
 async def login_user(
     user_data: AuthSchema, 
     response: Response, 
@@ -23,7 +23,7 @@ async def login_user(
     return token 
 
 
-@router.post("/sign")
+@router.post("/register") # был "/sign"
 def sign_user(
     user_data: AuthSchema,
     response: Response, 
@@ -36,6 +36,6 @@ def sign_user(
     return token
 
 
-@router.get("/me", dependencies=[Depends(auth.access_token_required)])
+@router.get("/check_user", dependencies=[Depends(auth.access_token_required)]) # был /me
 def protected():
     return {"message": "Hello World"}

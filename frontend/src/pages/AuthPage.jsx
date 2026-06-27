@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiPostJson, setTokens } from '../lib/api.js'
 
 function Field({ label, type = 'text', value, onChange, autoComplete }) {
@@ -17,6 +18,7 @@ function Field({ label, type = 'text', value, onChange, autoComplete }) {
 }
 
 export default function AuthPage({ onAuthSuccess }) {
+  const navigate = useNavigate()
   const [mode, setMode] = useState('login') // login | register
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
@@ -24,7 +26,10 @@ export default function AuthPage({ onAuthSuccess }) {
   const [error, setError] = useState(null)
 
   const endpoint = useMemo(() => {
-    return mode === 'login' ? '/api/auth/login' : '/api/auth/sign'
+    // mode: login | register
+    return mode === 'login'
+      ? '/api/auth/login'
+      : '/api/auth/register'
   }, [mode])
 
   async function onSubmit(e) {
@@ -47,6 +52,9 @@ export default function AuthPage({ onAuthSuccess }) {
       setTokens(data)
 
       onAuthSuccess?.()
+      // redirect on successful auth (backend responded ok)
+      navigate('/')
+      return
     } catch (err) {
       setError(err?.message || 'Login failed')
     } finally {
@@ -59,7 +67,7 @@ export default function AuthPage({ onAuthSuccess }) {
       <div className="bb-bg" />
       <div className="bb-auth-wrap">
         <div className="bb-window">
-          <div className="bb-titlebar">MyChat Authentication</div>
+          <div className="bb-titlebar">100_GRAMM Authentication</div>
 
           <div className="bb-tabs">
             <div

@@ -14,7 +14,7 @@ function AuthGate({ children }) {
     async function check() {
       if (cancelled) return
       try {
-        const res = await apiGet('/api/auth/me')
+        const res = await apiGet('/api/auth/check_user')
 
         if (cancelled) return
 

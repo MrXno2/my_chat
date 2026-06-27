@@ -57,12 +57,12 @@ body{
   height: 100%;
   padding: 18px 14px;
   display:flex;
-  align-items:flex-start;
+  align-items:center; /* vertical center */
   justify-content:center;
 }
 
 .bb-window{
-  width: min(380px, 92vw);
+  width: min(260px, 92vw); /* ~1.5x smaller */
   border: 2px solid var(--bb-window-dark);
   background: var(--bb-window);
   box-shadow: 0 12px 30px var(--bb-shadow);
@@ -70,8 +70,9 @@ body{
   overflow:hidden;
 }
 
+/* центрируем окно по вертикали/горизонтали через отсутствие отступов */
 .bb-window--small{
-  margin-top: 28px;
+  margin-top: 0;
 }
 
 .bb-titlebar{
