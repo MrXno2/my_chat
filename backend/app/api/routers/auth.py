@@ -36,8 +36,10 @@ async def sign_user(
     return token
 
 
-@router.get("/check_user", dependencies=[Depends(auth.access_token_required)]) # был /me
-async def protected():
+# @router.get("/check_user", dependencies=[Depends(auth.access_token_required)]) # был /me
+@router.get("/check_user") # был /me
+async def protected(payload = Depends(auth.access_token_required)):
+    print(payload.sub) # id юзера, payload просто название
     return {"message": "Hello World"}
 
 
