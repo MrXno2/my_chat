@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserSchema(BaseModel):
@@ -11,5 +11,5 @@ class UserSchema(BaseModel):
 
 
 class AuthSchema(BaseModel):
-    login: str
-    password: str
+    login: str = Field(min_length=4, description="Login cannot be empty")
+    password: str = Field(min_length=6, description="Password must be at least 6 characters")
