@@ -31,6 +31,14 @@ export default function MainPage() {
   const groupsContainerRef = useRef(null)
   const GROUP_LIMIT = 20
 
+  const [selectedGroup, setSelectedGroup] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [messagesLoading, setMessagesLoading] = useState(false)
+  const [messageText, setMessageText] = useState('')
+  const messagesContainerRef = useRef(null)
+  const messagesOffset = useRef(0)
+  const MESSAGE_LIMIT = 50
+
   const fetchGroups = useCallback(async (offset, append) => {
     if (groupsLoading) return
     setGroupsLoading(true)
@@ -65,6 +73,59 @@ export default function MainPage() {
     const el = e.target
     if (el.scrollHeight - el.scrollTop - el.clientHeight < 40 && hasMore && !groupsLoading) {
       fetchGroups(groupsOffset.current, true)
+    }
+  }
+
+  const fetchMessages = useCallback(async (groupId, offset, append) => {
+    if (messagesLoading) return
+    setMessagesLoading(true)
+    try {
+      const res = await apiGet('/api/chat/load', { group_id: groupId, limit: MESSAGE_LIMIT, offset })
+      if (res.status === 401) {
+        window.location.assign('/auth')
+        return
+      }
+      if (res.ok) {
+        const data = await res.json()
+        if (append) {
+          setMessages(prev => [...data.reverse(), ...prev])
+        } else {
+          setMessages(data.reverse())
+        }
+        messagesOffset.current = offset + data.length
+      }
+    } catch {
+      // ignore
+    } finally {
+      setMessagesLoading(false)
+    }
+  }, [messagesLoading])
+
+  function handleSelectGroup(group) {
+    setSelectedGroup(group)
+    setMessages([])
+    messagesOffset.current = 0
+    fetchMessages(group.id, 0, false)
+  }
+
+  async function handleSendMessage() {
+    if (!messageText.trim() || !selectedGroup) return
+    const text = messageText.trim()
+    setMessageText('')
+    try {
+      const { res } = await apiPostJson('/api/chat/save', {
+        group_id: String(selectedGroup.id),
+        message: text
+      })
+      if (res.status === 401) {
+        window.location.assign('/auth')
+        return
+      }
+      if (res.ok) {
+        fetchMessages(selectedGroup.id, 0, false)
+      }
+    } catch {
+      // ignore
     }
   }
 
@@ -181,13 +242,40 @@ export default function MainPage() {
                   onScroll={handleGroupsScroll}
                 >
                   {groups.map(g => (
-                    <div key={g.id} className="bb-group-item" data-id={g.id}>
+                    <div
+                      key={g.id}
+                      className={`bb-group-item${selectedGroup?.id === g.id ? ' bb-group-item--active' : ''}`}
+                      data-id={g.id}
+                      onClick={() => handleSelectGroup(g)}
+                    >
                       {g.name}
                     </div>
                   ))}
                   {groupsLoading && <div className="bb-group-loading">Loading...</div>}
                 </div>
-                <div className="bb-main-right" />
+                <div className="bb-main-right">
+                  {selectedGroup ? (
+                    <>
+                      <div className="bb-chat-header">{selectedGroup.name}</div>
+                      <div className="bb-chat-messages" ref={messagesContainerRef}>
+                        {messagesLoading && messages.length === 0 && (
+                          <div className="bb-chat-loading">Loading...</div>
+                        )}
+                        {messages.map((msg, i) => (
+                          <div
+                            key={i}
+                            className={`bb-message${msg.user_resp_id === msg.user_id ? ' bb-message--own' : ' bb-message--other'}`}
+                          >
+                            <div className="bb-message-name">{msg.user_name}</div>
+                            <div className="bb-message-text">{msg.content}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="bb-chat-placeholder">Select a group</div>
+                  )}
+                </div>
               </div>
 
               <div className="bb-main-bottom">
@@ -196,8 +284,22 @@ export default function MainPage() {
                   <button className="bb-main-btn" type="button" onClick={() => setShowJoinModal(true)}>Connect Group</button>
                 </div>
                 <div className="bb-main-bottom-right">
-                  <input className="bb-input-message" type="text" style={{ width: '80%', height: '100%', boxSizing: 'border-box' }} />
-                  <button className="bb-btn-message" type="button" style={{ width: '20%', height: '100%', boxSizing: 'border-box', margin: 0 }}>Send</button>
+                  <input
+                    className="bb-input-message"
+                    type="text"
+                    style={{ width: '80%', height: '100%', boxSizing: 'border-box' }}
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSendMessage() }}
+                    disabled={!selectedGroup}
+                  />
+                  <button
+                    className="bb-btn-message"
+                    type="button"
+                    style={{ width: '20%', height: '100%', boxSizing: 'border-box', margin: 0 }}
+                    onClick={handleSendMessage}
+                    disabled={!selectedGroup || !messageText.trim()}
+                  >Send</button>
                 </div>
               </div>
             </div>
