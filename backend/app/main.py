@@ -9,6 +9,7 @@ from app.api.routers.auth import router as router_auth
 from app.core.security import auth
 from app.core.exception_handler import register_exception_handlers
 from app.api.routers.group import router as router_group
+from app.api.routers.chat import router as router_chat
 
 @asynccontextmanager # при входе делает до yield, при выходе после, нужен для отработки при старте/запуске
 async def lifespan(_: FastAPI):
@@ -26,6 +27,7 @@ register_exception_handlers(app)
 
 app.include_router(router_auth)                 # роутер авторизации
 app.include_router(router_group)
+app.include_router(router_chat)
 
 app.add_middleware(
     CORSMiddleware,

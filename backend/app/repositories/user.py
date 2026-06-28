@@ -19,3 +19,7 @@ class UserRepository:
         await self.db.commit()
         await self.db.refresh(new_user)
         return new_user.id
+    
+    async def get_user(self, user_id: int) -> UserORM:
+        result = await self.db.execute(select(UserORM).where(UserORM.id == user_id))
+        return result.scalar_one_or_none()
