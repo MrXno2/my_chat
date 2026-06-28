@@ -398,3 +398,117 @@ body{
 .bb-modal-exit-btn:hover{
   background:#c00000;
 }
+
+/* Group modal (Create / Connect) */
+.bb-group-modal-overlay{
+  position:absolute;
+  inset:0;
+  z-index:50;
+  background: rgba(0,0,0,0.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 12px;
+}
+
+.bb-group-modal{
+  width: min(260px, 80vw);
+  background: var(--bb-window);
+  border: 2px solid var(--bb-window-dark);
+  box-shadow: 0 16px 34px var(--bb-shadow);
+  border-radius: 6px;
+  overflow:hidden;
+}
+
+.bb-group-modal-titlebar{
+  background: linear-gradient(#0000ff22, #0000ff00), #0000aa;
+  color:#fff;
+  padding: 6px 6px 6px 10px;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  border-bottom: 2px solid var(--bb-window-dark);
+}
+
+.bb-group-modal-close-btn{
+  width: 26px;
+  height: 22px;
+  border: 2px outset #808080;
+  background: #dddddd;
+  color:#000000;
+  font-weight:900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  margin:0;
+  line-height: 18px;
+}
+
+.bb-group-modal-close-btn:hover{
+  background:#ffffff;
+}
+
+.bb-group-modal-body{
+  padding: 12px 10px;
+  background:#cfcfcf;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.bb-group-modal-field{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.bb-group-modal-label{
+  font-weight:700;
+  font-size: 13px;
+}
+
+.bb-group-modal-input{
+  width:100%;
+  padding: 8px 10px;
+  border: 2px inset #808080;
+  background:#fff;
+  font-size: 14px;
+  outline:none;
+}
+
+.bb-group-modal-input:focus{
+  border: 2px inset #0000aa;
+}
+
+.bb-group-modal-submit-btn{
+  width: 100%;
+  padding: 8px 10px;
+  border: 2px outset #808080;
+  background: #e6e6e6;
+  cursor:pointer;
+  font-weight:800;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.bb-group-modal-submit-btn:hover{
+  background:#ffffff;
+}
+
+.bb-group-modal-submit-btn:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
+}
+
+.bb-group-modal-error{
+  background:#ffdddd;
+  border:2px solid #cc0000;
+  padding:8px;
+  border-radius:4px;
+  font-weight:700;
+  font-size: 12px;
+}

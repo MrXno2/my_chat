@@ -24,4 +24,4 @@ class GroupMemeberORM(Base):
         server_default=func.now(),
         nullable=False
     )
-    banned: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

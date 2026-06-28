@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.users import UserORM
 from app.core.security import hashed_pass
 from app.models.groups import GroupORM
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from app.db.session import get_db
 from sqlalchemy.exc import IntegrityError
 
@@ -14,8 +14,8 @@ from app.models.group_members import GroupMemeberORM
 
 
 class GroupSchema(BaseModel):
-    name: str
-    password: str
+    name: str = Field(min_length=4, description="Login cannot be empty")
+    password: str = Field(min_length=6, description="Password must be at least 6 characters")
 
 
 class GroupService:
@@ -23,24 +23,13 @@ class GroupService:
         self.db = db
         self.group_repository = GroupRepository(db)
 
-    async def create_group_service(self, group_data: GroupSchema, user_id: str) -> None:
+    async def create_group(self, group_data: GroupSchema, user_id: str) -> None:
         try:
             group_orm = await self.group_repository.create_group(group_data=group_data, user_id=user_id)
         except IntegrityError:
             raise GroupAlreadyExists()
-        """
-        if not user_orm:
-            raise UserNotFound()
-        if verify_password(user_data.password, user_orm.password_hash):
-            return create_token(user_orm.id)
-        else:
-            raise UserInvalidPass()
-        """
 
-    async def connect_group_service(self, group_data: GroupSchema, user_id: str) -> None:
-        # найти юзера по группе, т.е. поиск граппа - юзер, если есть, 
-        # проверить бан, 
-        # если бана нет вернуть что он и так в группе
+    async def connect_group(self, group_data: GroupSchema, user_id: str) -> None:
         group_orm = await self.group_repository.get_group_data(group_data.name)
         if not group_orm:
             raise GroupNotFound()
@@ -53,8 +42,7 @@ class GroupService:
                 raise UserAlreadyInGroup()
 
         if verify_password(group_data.password, group_orm.password_hash):
-            # записать юзера в группу
-            pass
+            await self.group_repository.add_user_in_group(group_orm.id, int(user_id))
         else:
             raise InvalidPassword()
 
@@ -64,7 +52,7 @@ class GroupRepository:
         self.db = db
 
     # возвращает первого найденного юзера в группе или НОНЕ
-    async def get_user_in_group(self, group_id: str, user_id: str) -> GroupMemeberORM | None:
+    async def get_user_in_group(self, group_id: int, user_id: int) -> GroupMemeberORM | None:
         result = await self.db.execute(
             select(GroupMemeberORM)
             .where(
@@ -74,6 +62,14 @@ class GroupRepository:
             )
         )
         return result.scalar_one_or_none()
+    
+    async def add_user_in_group(self, group_id: int, user_id: int) -> None:
+        new_user_in_group = GroupMemeberORM(
+            group_id = group_id,
+            user_id = user_id
+        )
+        self.db.add(new_user_in_group)
+        await self.db.commit()
     
     # возвращает первую найденную групппу по имени или НОНЕ
     async def get_group_data(self, group_name: str) -> GroupORM | None:
@@ -111,12 +107,17 @@ async def create_group(
     payload = Depends(auth.access_token_required)
 ) -> None:
     user_id = payload.sub
-    await group_service.create_group_service(group_data, user_id)
+    await group_service.create_group(group_data, user_id)
 
 
 @router.post("/connect")
-async def connect_group():
-    pass
+async def connect_group(
+    group_data: GroupSchema,
+    group_service: GroupService = Depends(get_group_service),
+    payload = Depends(auth.access_token_required)
+) -> None:
+    user_id = payload.sub
+    await group_service.connect_group(group_data, user_id)
 
 
 @router.get("")

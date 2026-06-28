@@ -35,6 +35,14 @@ export default function AuthPage({ onAuthSuccess }) {
   async function onSubmit(e) {
     e.preventDefault()
     setError(null)
+    if (login.length < 4) {
+      setError('Login must be at least 4 characters.')
+      return
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.')
+      return
+    }
     setSubmitting(true)
 
     try {
