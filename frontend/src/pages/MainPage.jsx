@@ -36,6 +36,10 @@ export default function MainPage() {
     setGroupsLoading(true)
     try {
       const res = await apiGet('/api/group/get', { limit: GROUP_LIMIT, offset })
+      if (res.status === 401) {
+        window.location.assign('/auth')
+        return
+      }
       if (res.ok) {
         const data = await res.json()
         if (append) {
@@ -81,6 +85,10 @@ export default function MainPage() {
         password: createGroupPass
       })
       if (!res.ok) {
+        if (res.status === 401) {
+          window.location.assign('/auth')
+          return
+        }
         const errorType = data?.error_type
         if (errorType === 'TokenExpiredError' || errorType === 'MissingTokenError') {
           window.location.assign('/auth')
@@ -116,6 +124,10 @@ export default function MainPage() {
         password: joinGroupPass
       })
       if (!res.ok) {
+        if (res.status === 401) {
+          window.location.assign('/auth')
+          return
+        }
         const errorType = data?.error_type
         if (errorType === 'TokenExpiredError' || errorType === 'MissingTokenError') {
           window.location.assign('/auth')
