@@ -13,24 +13,8 @@ from sqlalchemy.exc import IntegrityError
 
 from app.core.exception import GroupAlreadyExists, GroupNotFound, InvalidPassword, UserAlreadyInGroup, UserBannedInGroup
 from app.models.group_members import GroupMemeberORM
-
-
-class GroupSchema(BaseModel):
-    name: str = Field(min_length=4, description="Login cannot be empty")
-    password: str = Field(min_length=6, description="Password must be at least 6 characters")
-
-
-class PaginationParams(BaseModel):
-    limit: int = Field(5, ge=0, le=100, description="Кол-во элементов")
-    offset: int = Field(0, ge=0, description="Смещение по пагинации")
-
-
-PaginationDep = Annotated[PaginationParams, Depends(PaginationParams)]
-
-
-class GroupMemberResponse(BaseModel):
-    id: int
-    name: str
+from app.schemas.common import PaginationDep, PaginationParams
+from app.schemas.group import GroupMemberResponse, GroupSchema
 
 
 class GroupService:
@@ -63,7 +47,7 @@ class GroupService:
             raise InvalidPassword()
         
     async def get_group(
-        self, user_id: str, pagination: PaginationDep
+        self, user_id: str, pagination: PaginationParams
     ) -> list[GroupMemberResponse]:
         group_orm = await self.group_repository.get_group(int(user_id), pagination)
         return [GroupMemberResponse(id=group.id, name=group.name) for group in group_orm]
@@ -78,15 +62,14 @@ class GroupRepository:
         result = await self.db.execute(
             select(GroupMemeberORM)
             .where(
-                GroupMemeberORM.group_id == group_id 
-                and 
+                GroupMemeberORM.group_id == group_id,
                 GroupMemeberORM.user_id == user_id
             )
         )
         return result.scalar_one_or_none()
     
     # вертает список групп
-    async def get_group(self, user_id: int, pagination: PaginationDep) -> list[GroupORM]:
+    async def get_group(self, user_id: int, pagination: PaginationParams) -> list[GroupORM]:
         result = await self.db.execute(
             select(GroupORM)
             .join(GroupMemeberORM, GroupMemeberORM.group_id == GroupORM.id)
@@ -162,7 +145,7 @@ async def get_group(
     pagination: PaginationDep, 
     group_service: GroupService = Depends(get_group_service),
     payload = Depends(auth.access_token_required)
-):
+) -> list[GroupMemberResponse]:
     user_id = payload.sub
     return await group_service.get_group(user_id, pagination)
 
