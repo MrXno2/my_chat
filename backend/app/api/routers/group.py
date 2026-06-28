@@ -17,45 +17,21 @@ from app.schemas.common import PaginationDep, PaginationParams
 from app.schemas.group import GroupMemberResponse, GroupSchema
 
 
-class GroupService:
-    def __init__(self, db: AsyncSession):
-        self.db = db
-        self.group_repository = GroupRepository(db)
-
-    async def create_group(self, group_data: GroupSchema, user_id: str) -> None:
-        try:
-            group_orm = await self.group_repository.create_group(group_data=group_data, user_id=int(user_id))
-            user_created_group = await self.group_repository.add_user_in_group(group_id=group_orm.id, user_id=int(user_id))
-        except IntegrityError:
-            raise GroupAlreadyExists()
-
-    async def connect_group(self, group_data: GroupSchema, user_id: str) -> None:
-        group_orm = await self.group_repository.get_group_data(group_data.name)
-        if not group_orm:
-            raise GroupNotFound()
-
-        user_orm_in_group = await self.group_repository.get_user_in_group(group_orm.id, int(user_id))
-        if user_orm_in_group:
-            if user_orm_in_group.banned:
-                raise UserBannedInGroup()
-            else:
-                raise UserAlreadyInGroup()
-
-        if verify_password(group_data.password, group_orm.password_hash):
-            await self.group_repository.add_user_in_group(group_orm.id, int(user_id))
-        else:
-            raise InvalidPassword()
-        
-    async def get_group(
-        self, user_id: str, pagination: PaginationParams
-    ) -> list[GroupMemberResponse]:
-        group_orm = await self.group_repository.get_group(int(user_id), pagination)
-        return [GroupMemberResponse(id=group.id, name=group.name) for group in group_orm]
-
-
-class GroupRepository:
+class BaseRepository:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
+
+    async def safe_commit(self, error_cls):
+        try:
+            await self.db.commit()
+        except IntegrityError:
+            await self.db.rollback()
+            raise error_cls()
+
+
+class GroupRepository(BaseRepository):
+    def __init__(self, db: AsyncSession) -> None:
+        super().__init__(db)
 
     # возвращает первого найденного юзера в группе или НОНЕ
     async def get_user_in_group(self, group_id: int, user_id: int) -> GroupMemeberORM | None:
@@ -89,7 +65,7 @@ class GroupRepository:
             user_id = user_id,
         )
         self.db.add(new_user_in_group)
-        await self.db.commit()
+    #   await self.db.commit()
     
     # возвращает первую найденную групппу по имени или НОНЕ
     async def get_group_data(self, group_name: str) -> GroupORM | None:
@@ -107,10 +83,42 @@ class GroupRepository:
             creator_id=user_id
         )
         self.db.add(new_group)
-        await self.db.commit()
-        await self.db.refresh(new_group)
+    #    await self.db.commit()
+    #    await self.db.refresh(new_group)
+        await self.db.flush()
         return new_group
 
+
+class GroupService:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+        self.group_repository = GroupRepository(db)
+
+    async def create_group(self, group_data: GroupSchema, user_id: str) -> None:
+        group_orm = await self.group_repository.create_group(group_data=group_data, user_id=int(user_id))
+        await self.group_repository.add_user_in_group(group_id=group_orm.id, user_id=int(user_id))
+        await self.group_repository.safe_commit(GroupAlreadyExists)
+
+    async def connect_group(self, group_data: GroupSchema, user_id: str) -> None:
+        group_orm = await self.group_repository.get_group_data(group_data.name)
+        if not group_orm:
+            raise GroupNotFound()
+        user_orm_in_group = await self.group_repository.get_user_in_group(group_orm.id, int(user_id))
+        if user_orm_in_group:
+            if user_orm_in_group.banned:
+                raise UserBannedInGroup()
+            else:
+                raise UserAlreadyInGroup()
+        if not verify_password(group_data.password, group_orm.password_hash):
+            raise InvalidPassword()
+        await self.group_repository.add_user_in_group(group_orm.id, int(user_id))
+        await self.group_repository.safe_commit(UserAlreadyInGroup)
+        
+    async def get_group(
+        self, user_id: str, pagination: PaginationParams
+    ) -> list[GroupMemberResponse]:
+        group_orm = await self.group_repository.get_group(int(user_id), pagination)
+        return [GroupMemberResponse(id=group.id, name=group.name) for group in group_orm]
 
 
 async def get_group_service(db: AsyncSession = Depends(get_db)):
@@ -148,11 +156,6 @@ async def get_group(
 ) -> list[GroupMemberResponse]:
     user_id = payload.sub
     return await group_service.get_group(user_id, pagination)
-
-
-@router.delete("")
-async def delete_group():
-    pass
 
 
 
