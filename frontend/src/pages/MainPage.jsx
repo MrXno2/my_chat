@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { apiPostJson, clearTokens } from '../lib/api.js'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { apiGet, apiPostJson, clearTokens } from '../lib/api.js'
 
 const GROUP_ERROR_MESSAGES = {
   GroupAlreadyExists: 'Group already exists.',
@@ -24,6 +24,46 @@ export default function MainPage() {
   const [createSubmitting, setCreateSubmitting] = useState(false)
   const [joinSubmitting, setJoinSubmitting] = useState(false)
 
+  const [groups, setGroups] = useState([])
+  const [groupsLoading, setGroupsLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const groupsOffset = useRef(0)
+  const groupsContainerRef = useRef(null)
+  const GROUP_LIMIT = 20
+
+  const fetchGroups = useCallback(async (offset, append) => {
+    if (groupsLoading) return
+    setGroupsLoading(true)
+    try {
+      const res = await apiGet('/api/group/get', { limit: GROUP_LIMIT, offset })
+      if (res.ok) {
+        const data = await res.json()
+        if (append) {
+          setGroups(prev => [...prev, ...data])
+        } else {
+          setGroups(data)
+        }
+        setHasMore(data.length === GROUP_LIMIT)
+        groupsOffset.current = offset + data.length
+      }
+    } catch {
+      // ignore — groups stay empty
+    } finally {
+      setGroupsLoading(false)
+    }
+  }, [groupsLoading])
+
+  useEffect(() => {
+    fetchGroups(0, false)
+  }, [])
+
+  function handleGroupsScroll(e) {
+    const el = e.target
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 40 && hasMore && !groupsLoading) {
+      fetchGroups(groupsOffset.current, true)
+    }
+  }
+
   async function handleCreateGroup() {
     setCreateError(null)
     if (createGroupName.length < 4) {
@@ -42,11 +82,16 @@ export default function MainPage() {
       })
       if (!res.ok) {
         const errorType = data?.error_type
+        if (errorType === 'TokenExpiredError' || errorType === 'MissingTokenError') {
+          window.location.assign('/auth')
+          return
+        }
         throw new Error(GROUP_ERROR_MESSAGES[errorType] || 'Unknown error, please try again later')
       }
       setShowCreateModal(false)
       setCreateGroupName('')
       setCreateGroupPass('')
+      fetchGroups(0, false)
     } catch (err) {
       setCreateError(err?.message || 'Unknown error, please try again later')
     } finally {
@@ -72,11 +117,16 @@ export default function MainPage() {
       })
       if (!res.ok) {
         const errorType = data?.error_type
+        if (errorType === 'TokenExpiredError' || errorType === 'MissingTokenError') {
+          window.location.assign('/auth')
+          return
+        }
         throw new Error(GROUP_ERROR_MESSAGES[errorType] || 'Unknown error, please try again later')
       }
       setShowJoinModal(false)
       setJoinGroupName('')
       setJoinGroupPass('')
+      fetchGroups(0, false)
     } catch (err) {
       setJoinError(err?.message || 'Unknown error, please try again later')
     } finally {
@@ -113,7 +163,18 @@ export default function MainPage() {
           <div className="bb-window__content">
             <div className="bb-main-layout">
               <div className="bb-main-top">
-                <div className="bb-main-left" />
+                <div
+                  className="bb-main-left"
+                  ref={groupsContainerRef}
+                  onScroll={handleGroupsScroll}
+                >
+                  {groups.map(g => (
+                    <div key={g.id} className="bb-group-item" data-id={g.id}>
+                      {g.name}
+                    </div>
+                  ))}
+                  {groupsLoading && <div className="bb-group-loading">Loading...</div>}
+                </div>
                 <div className="bb-main-right" />
               </div>
 

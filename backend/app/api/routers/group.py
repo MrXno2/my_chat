@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.security import auth, verify_password
 from sqlalchemy import select
@@ -18,6 +20,19 @@ class GroupSchema(BaseModel):
     password: str = Field(min_length=6, description="Password must be at least 6 characters")
 
 
+class PaginationParams(BaseModel):
+    limit: int = Field(5, ge=0, le=100, description="Кол-во элементов")
+    offset: int = Field(0, ge=0, description="Смещение по пагинации")
+
+
+PaginationDep = Annotated[PaginationParams, Depends(PaginationParams)]
+
+
+class GroupMemberResponse(BaseModel):
+    id: int
+    name: str
+
+
 class GroupService:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -25,7 +40,8 @@ class GroupService:
 
     async def create_group(self, group_data: GroupSchema, user_id: str) -> None:
         try:
-            group_orm = await self.group_repository.create_group(group_data=group_data, user_id=user_id)
+            group_orm = await self.group_repository.create_group(group_data=group_data, user_id=int(user_id))
+            user_created_group = await self.group_repository.add_user_in_group(group_id=group_orm.id, user_id=int(user_id))
         except IntegrityError:
             raise GroupAlreadyExists()
 
@@ -45,6 +61,12 @@ class GroupService:
             await self.group_repository.add_user_in_group(group_orm.id, int(user_id))
         else:
             raise InvalidPassword()
+        
+    async def get_group(
+        self, user_id: str, pagination: PaginationDep
+    ) -> list[GroupMemberResponse]:
+        group_orm = await self.group_repository.get_group(int(user_id), pagination)
+        return [GroupMemberResponse(id=group.id, name=group.name) for group in group_orm]
 
 
 class GroupRepository:
@@ -63,10 +85,25 @@ class GroupRepository:
         )
         return result.scalar_one_or_none()
     
+    # вертает список групп
+    async def get_group(self, user_id: int, pagination: PaginationDep) -> list[GroupORM]:
+        result = await self.db.execute(
+            select(GroupORM)
+            .join(GroupMemeberORM, GroupMemeberORM.group_id == GroupORM.id)
+            .where(
+                GroupMemeberORM.user_id == user_id,
+                GroupMemeberORM.banned.is_(False)
+            )
+            .limit(pagination.limit)
+            .offset(pagination.offset)
+        )
+        return result.scalars().all()
+
+    # добвляем юзера в группу
     async def add_user_in_group(self, group_id: int, user_id: int) -> None:
         new_user_in_group = GroupMemeberORM(
             group_id = group_id,
-            user_id = user_id
+            user_id = user_id,
         )
         self.db.add(new_user_in_group)
         await self.db.commit()
@@ -80,11 +117,11 @@ class GroupRepository:
         return result.scalar_one_or_none()
 
     # тута вроде готово
-    async def create_group(self, group_data: GroupSchema, user_id: str) -> GroupORM:
+    async def create_group(self, group_data: GroupSchema, user_id: int) -> GroupORM:
         new_group = GroupORM(
             name=group_data.name, 
             password_hash=hashed_pass(group_data.password), 
-            creator_id=int(user_id)
+            creator_id=user_id
         )
         self.db.add(new_group)
         await self.db.commit()
@@ -120,9 +157,14 @@ async def connect_group(
     await group_service.connect_group(group_data, user_id)
 
 
-@router.get("")
-async def get_group():
-    pass
+@router.get("/get")
+async def get_group(
+    pagination: PaginationDep, 
+    group_service: GroupService = Depends(get_group_service),
+    payload = Depends(auth.access_token_required)
+):
+    user_id = payload.sub
+    return await group_service.get_group(user_id, pagination)
 
 
 @router.delete("")
@@ -132,15 +174,3 @@ async def delete_group():
 
 
 
-"""
-если токен просрочен выкинет статус 422
-{
-  "message": "Token has expired",
-  "error_type": "TokenExpiredError"
-}
-если токена нет выкинет статус 401
-{
-  "message": "Token Error",
-  "error_type": "MissingTokenError"
-}
-"""

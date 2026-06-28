@@ -20,8 +20,12 @@ function clearTokens() {
   })
 }
 
-export async function apiGet(path) {
-  return fetch(apiUrl(path), {
+export async function apiGet(path, params = {}) {
+  const url = new URL(apiUrl(path))
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
+  })
+  return fetch(url.toString(), {
     method: 'GET',
     credentials: 'include'
   })
